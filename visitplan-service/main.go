@@ -2,6 +2,7 @@ package main
 
 import (
 	"PX-visitplan/database"
+	"PX-visitplan/events"
 	"PX-visitplan/repository"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -40,6 +41,14 @@ func main() {
 		log.Fatal(err)
 	}
 	repository.SetRepository(repo)
+	
+	//NATS
+	n, err := events.NewNats(fmt.Sprintf("nats://%s", cfg.NatsAddress))
+	if err != nil {
+		log.Fatal(err)
+	}
+	events.SetEventStore(n)
+	defer events.Close()
 
 	//Start Server
 	router := newRoute()
