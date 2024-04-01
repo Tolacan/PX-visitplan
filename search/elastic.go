@@ -93,7 +93,7 @@ func (repo *ElasticSearchRepository) SearchVisitPlan(ctx context.Context, query 
 		"query": map[string]interface{}{
 			"multi_match": map[string]interface{}{
 				"query":  query,
-				"fields": []string{"nombre", "ruta", "responsables"},
+				"fields": []string{"uuid","nombre", "ruta", "responsable","uuidRuta","clientes"},
 			},
 		},
 	}
