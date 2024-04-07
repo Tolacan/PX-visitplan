@@ -90,10 +90,25 @@ func (repo *ElasticSearchRepository) SearchVisitPlan(ctx context.Context, query 
 
 	var buf bytes.Buffer
 	searchQuery := map[string]interface{}{
-		"query": map[string]interface{}{
-			"multi_match": map[string]interface{}{
-				"query":  query,
-				"fields": []string{"uuid","nombre", "ruta", "responsable","uuidRuta","clientes"},
+		"bool": map[string]interface{}{
+			"should": []map[string]interface{}{
+				map[string]interface{}{
+					"multi_match": map[string]interface{}{
+						"query":  query,
+						"fields": []string{"nombre", "ruta", "responsables"},
+					},
+				},
+				map[string]interface{}{
+					"nested": map[string]interface{}{
+						"path": "responsables",
+						"query": map[string]interface{}{
+							"multi_match": map[string]interface{}{
+								"query":  query,
+								"fields": []string{"responsables.nombre", "responsables.apellido"},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
