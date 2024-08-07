@@ -10,6 +10,7 @@ type Repository interface {
 	InsertVisitPlan(ctx context.Context, visit *models.VisitPlan) error
 	UpdateVisitPlan(ctx context.Context, visit *models.VisitPlan) error
 	ListVisitPlans(ctx context.Context) ([]*models.VisitPlan, error)
+	ListVisitPlansHeader(ctx context.Context) ([]*models.VisitPlanHeader, error)
 }
 
 var repo Repository
@@ -28,6 +29,10 @@ func InsertVisitPlan(ctx context.Context, visit *models.VisitPlan) error {
 
 func ListVisitPlans(ctx context.Context) ([]*models.VisitPlan, error) {
 	return repo.ListVisitPlans(ctx)
+}
+
+func ListVisitPlansHeader(ctx context.Context) ([]*models.VisitPlanHeader, error) {
+	return repo.ListVisitPlansHeader(ctx)
 }
 
 func UpdateVisitPlan(ctx context.Context, visit *models.VisitPlan) error {

@@ -13,6 +13,7 @@ import (
 )
 
 type Config struct {
+	PostgresUrl      string `envconfig:"POSTGRES_URL"`
 	PostgresDB       string `envconfig:"POSTGRES_DB"`
 	PostgresUser     string `envconfig:"POSTGRES_USER"`
 	PostgresPassword string `envconfig:"POSTGRES_PASSWORD"`
@@ -35,13 +36,13 @@ func main() {
 		log.Fatalf("%v", err)
 	}
 
-	psqlInfo := fmt.Sprintf("host=192.168.0.8 port=5430 user=%s password=%s dbname=%s sslmode=disable", cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDB)
+	psqlInfo := fmt.Sprintf("host=%s port=5430 user=%s password=%s dbname=%s sslmode=disable", cfg.PostgresUrl, cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDB)
 	repo, err := database.NewPostgresRepository(psqlInfo)
 	if err != nil {
 		log.Fatal(err)
 	}
 	repository.SetRepository(repo)
-	
+
 	//NATS
 	n, err := events.NewNats(fmt.Sprintf("nats://%s", cfg.NatsAddress))
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"PX-visitplan/models"
 	"bytes"
 	"context"
-	"encoding/gob"
+	"encoding/json"
 	"github.com/nats-io/nats.go"
 )
 
@@ -42,8 +42,9 @@ func (store *NatsEventStore) encodeMessage(m Message) ([]byte, error) {
 
 	//Se crea un buffer nuevo de tipo bytes
 	b := bytes.Buffer{}
+	b.Reset()
 	//Codifica el mensaje en el buffer de Message a bytes
-	err := gob.NewEncoder(&b).Encode(m)
+	err := json.NewEncoder(&b).Encode(m)
 
 	if err != nil {
 		return nil, err
@@ -87,8 +88,9 @@ func (store *NatsEventStore) PublishCreateVisitPlan(ctx context.Context, visit *
 
 func (store *NatsEventStore) decodeMessage(data []byte, m interface{}) error {
 	b := bytes.Buffer{}
+	b.Reset()
 	b.Write(data)
-	return gob.NewDecoder(&b).Decode(m)
+	return json.NewDecoder(&b).Decode(m)
 }
 
 func (store *NatsEventStore) OnCreateVisitPlan(f func(VisitPlanMessage)) (err error) {

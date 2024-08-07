@@ -58,6 +58,19 @@ func listVisitPlanHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(visitsP)
 }
 
+func listVisitPlanHeaderHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var err error
+	visitsP, err := repository.ListVisitPlansHeader(ctx)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(visitsP)
+}
+
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()

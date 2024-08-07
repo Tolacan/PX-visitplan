@@ -6,14 +6,16 @@ import (
 	"PX-visitplan/repository"
 	"PX-visitplan/search"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
-	"log"
-	"net/http"
 )
 
 type Config struct {
+	PostgresUrl          string `envconfig:"POSTGRES_URL"`
 	PostgresDB           string `envconfig:"POSTGRES_DB"`
 	PostgresUser         string `envconfig:"POSTGRES_USER"`
 	PostgresPassword     string `envconfig:"POSTGRES_PASSWORD"`
@@ -24,6 +26,7 @@ type Config struct {
 func newRoute() (router *mux.Router) {
 	router = mux.NewRouter()
 	router.HandleFunc("/visitplan", listVisitPlanHandler).Methods(http.MethodGet)
+	router.HandleFunc("/visitplanheader", listVisitPlanHeaderHandler).Methods(http.MethodGet)
 	router.HandleFunc("/search", searchHandler).Methods(http.MethodGet)
 	return
 }
@@ -36,7 +39,7 @@ func main() {
 		log.Fatalf("%v", err)
 	}
 	//Postgres DataBase
-	psqlInfo := fmt.Sprintf("host=192.168.0.8 port=5430 user=%s password=%s dbname=%s sslmode=disable", cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDB)
+	psqlInfo := fmt.Sprintf("host=%s port=5430 user=%s password=%s dbname=%s sslmode=disable", cfg.PostgresUrl, cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDB)
 	repo, err := database.NewPostgresRepository(psqlInfo)
 	if err != nil {
 		log.Fatal(err)

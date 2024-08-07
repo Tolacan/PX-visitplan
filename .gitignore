@@ -1,2 +1,4 @@
 .idea
 visitplan-service/.env
+query-service/.env
+compose.yaml

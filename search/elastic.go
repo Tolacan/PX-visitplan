@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	elastic "github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 )
@@ -60,55 +59,40 @@ func (repo *ElasticSearchRepository) IndexVisitPlan(ctx context.Context, visitPl
 }
 
 func (repo *ElasticSearchRepository) UpdateVisitPlan(ctx context.Context, visitPlan models.VisitPlan) error {
-
 	body, er := json.Marshal(visitPlan)
 	if er != nil {
 		return errors.New("Error al serializar el documento" + er.Error())
 	}
 
-	req := esapi.UpdateRequest{
-		Index:      "visitplans",
-		DocumentID: visitPlan.Uuid,
-		Body:       bytes.NewReader([]byte(fmt.Sprintf(`{"doc":%s}`, body))),
-		Refresh:    "true",
+	req := esapi.IndexRequest{
+		Index:   "visitplans",
+		Body:    bytes.NewReader(body),
+		Refresh: "true",
 	}
 
+	// Realizar la solicitud de indexación
 	res, err := req.Do(ctx, repo.client)
 	if err != nil {
 		return err
 	}
-
 	defer res.Body.Close()
-	if res.IsError() {
-		return errors.New("Failed to update document" + res.String())
-	}
 
-	return nil
+	// Verificar la respuesta de Elasticsearch
+	if res.IsError() {
+		return errors.New("Error al indexar el documento:" + res.String())
+	} else {
+		return nil
+	}
 }
 
 func (repo *ElasticSearchRepository) SearchVisitPlan(ctx context.Context, query string) (results []models.VisitPlan, err error) {
 
 	var buf bytes.Buffer
 	searchQuery := map[string]interface{}{
-		"bool": map[string]interface{}{
-			"should": []map[string]interface{}{
-				map[string]interface{}{
-					"multi_match": map[string]interface{}{
-						"query":  query,
-						"fields": []string{"nombre", "ruta", "responsables"},
-					},
-				},
-				map[string]interface{}{
-					"nested": map[string]interface{}{
-						"path": "responsables",
-						"query": map[string]interface{}{
-							"multi_match": map[string]interface{}{
-								"query":  query,
-								"fields": []string{"responsables.nombre", "responsables.apellido"},
-							},
-						},
-					},
-				},
+		"query": map[string]interface{}{
+			"multi_match": map[string]interface{}{
+				"query":  query,
+				"fields": []string{"uuid", "nombre", "ruta"},
 			},
 		},
 	}

@@ -4,6 +4,7 @@ import (
 	"PX-visitplan/models"
 	"context"
 	"database/sql"
+
 	_ "github.com/lib/pq"
 )
 
@@ -123,6 +124,48 @@ func (repo *PostgresRepository) ListVisitPlans(ctx context.Context) ([]*models.V
 			clients = append(clients, client)
 		}
 		visitsClient.Clientes = clients
+	}
+
+	return visits, nil
+}
+
+func (repo *PostgresRepository) ListVisitPlansHeader(ctx context.Context) ([]*models.VisitPlanHeader, error) {
+
+	query := `
+	SELECT uuid,nombre,ruta,uuid_ruta,lunes,martes,miercoles,jueves,viernes,sabado,domingo,responsable,fecha_registro,fecha_modificacion,activo
+	FROM visitplans Where activo = true
+`
+	rows, err := repo.db.QueryContext(ctx, query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var visits []*models.VisitPlanHeader
+	for rows.Next() {
+		visit := &models.VisitPlanHeader{}
+		err := rows.Scan(
+			&visit.Uuid,
+			&visit.Nombre,
+			&visit.Ruta,
+			&visit.UuidRuta,
+			&visit.Lunes,
+			&visit.Martes,
+			&visit.Miercoles,
+			&visit.Jueves,
+			&visit.Viernes,
+			&visit.Sabado,
+			&visit.Domingo,
+			&visit.Responsable,
+			&visit.FechaRegistro,
+			&visit.FechaModificacion,
+			&visit.Activo,
+		)
+		if err != nil {
+			return nil, err
+		}
+		visits = append(visits, visit)
 	}
 
 	return visits, nil
